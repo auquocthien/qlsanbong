@@ -1,0 +1,114 @@
+package v1_qlsb;
+import java.util.Scanner;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+public class Khach {
+	private String maKhach;
+	private String hoten;
+	private String sdt;
+	private String namSinh;
+	private String maSan;
+	private String tgBDDa;
+	private int thoigianDa;
+	private double thanhTien;
+	
+	public Khach() {
+		maKhach = new String();
+		hoten = new String();
+		sdt = new String();
+		namSinh = new String();
+		maSan = new String();
+		tgBDDa = new String();
+		thoigianDa = 0;
+		thanhTien = 0.0; 
+	}
+	public String CreateKey() throws SQLException {
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+		conn = DriverManager.getConnection("jdbc:mysql://localhost/qlsanbong?" + "user=root");
+		int nextKey = 0;
+		stmt = conn.createStatement();
+		rs = stmt.executeQuery("select count(*) as sldong from LDSKhach");
+		while(rs.next()) {
+			nextKey = rs.getInt("sldong");			
+		}
+		if(nextKey == 0) {
+			nextKey = 1;
+		}
+		else {
+			nextKey = nextKey + 1;
+		}
+		return "KH" + nextKey;
+		
+	}
+	public String nhapNgay() {
+		Scanner sc = new Scanner(System.in);
+		System.out.print("nhap nam: ");
+		int nam = sc.nextInt();
+		System.out.print("nhap thang: ");
+		int thang = sc.nextInt();
+		System.out.print("nhap ngay: ");
+		int ngay = sc.nextInt();
+		System.out.print("nhap gio: ");
+		int h = sc.nextInt();
+		System.out.print("nhap phut: ");
+		int m = sc.nextInt();
+		int s = 0;
+		return nam + "-" + thang + "-" + ngay + " " + h + ":" + m + ":" + s;
+	}
+	public void taoLichDa() throws SQLException {
+			Scanner sc = new Scanner(System.in);
+			maKhach = CreateKey();
+			System.out.print("nhap ho ten: ");
+			hoten = sc.next();
+			System.out.print("nhap so dien thoai: ");
+			sdt = sc.next();
+			System.out.print("chon san: ");
+			maSan = sc.next();
+			System.out.print("thoi gian bat dau da: ");
+			tgBDDa = nhapNgay();
+			System.out.print("thoi gian da: ");
+			thoigianDa = sc.nextInt();
+			sc.close();
+		try {
+			Connection conn = null;
+			CallableStatement stmt = null;
+			conn = DriverManager.getConnection("jdbc:mysql://localhost/qlsanbong?" + "user=root");
+			stmt = conn.prepareCall("{call THEM_LDSK(?,?,?,?,?,?)}");
+			stmt.setString(1, maKhach);
+			stmt.setString(2, hoten);
+			stmt.setString(3, sdt);
+			stmt.setString(4, maSan);
+			stmt.setString(5, tgBDDa);
+			stmt.setInt(6, thoigianDa);
+			stmt.execute();
+			System.out.print("thanh cong");
+		}
+		catch(SQLException ex){
+			System.out.print("loi: " + ex);
+			
+		}
+	}
+	public void nhap() throws SQLException{
+		Connection conn = null;
+		CallableStatement stmt = null;
+		Scanner sc = new Scanner(System.in);
+		maKhach = CreateKey();
+		System.out.print("nhap ten: ");
+		hoten = sc.next();
+		System.out.print("nhap so dien thoai: ");
+		sdt = sc.next();
+		conn = DriverManager.getConnection("jbdc://localhost/qlsanbong" + "user=root");
+		stmt = conn.prepareCall("{THEM_KH(?,?,?)}");
+		stmt.setString(1, maKhach);
+		stmt.setString(2, hoten);
+		stmt.setString(3, sdt);
+		stmt.execute();
+	}
+}

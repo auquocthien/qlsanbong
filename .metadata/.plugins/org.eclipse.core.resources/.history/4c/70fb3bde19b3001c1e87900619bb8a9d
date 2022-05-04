@@ -1,0 +1,15 @@
+package v1_qlsb;
+
+import java.sql.SQLException;
+
+public class mainSQL {
+	public static void main(String args[]) throws SQLException {
+		// TODO Auto-generated method stub
+		Khach kh = new Khach();
+//		System.out.print(kh.CreateKey());
+		kh.taoLichDa();
+//		String a = kh.nhapNgay();
+//		System.out.print(a);
+	}
+
+}

@@ -1,0 +1,18 @@
+package v1_qlsb;
+
+import java.sql.SQLException;
+
+public class mainSQL {
+	public static void main(String args[]) throws SQLException {
+		// TODO Auto-generated method stub
+		String keyExit = "";
+		while(keyExit != "x") {
+			System.out.print("chao mung den voi he thong quan li san bong\n");
+			System.out.print("1: su dung voi tu cach khach\n");
+			System.out.print("2: dang nhap\n");
+			System.out.print("2: dang ki tai khoan\n");
+		}
+		
+	}
+
+}
