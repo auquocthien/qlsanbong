@@ -6,7 +6,6 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import static v1_qlsb.Khach.nhapNgayDK;
 public class San {
 	public void dsSan() throws SQLException{
 		Connection conn = null;
@@ -29,15 +28,10 @@ public class San {
 		ResultSet rs = null;
 		conn = DriverManager.getConnection("jdbc:mysql://localhost/qlsanbongV_1?" + "user=root");
 		System.out.print("nhap ten san can tim: ");
-		String tenSan = sc.next();
-		System.out.print("nhap ngay thang can tim: ");
-		String ngayda = nhapNgayDK();
-		sc.close();
-		stmt = conn.prepareCall("{LICH_	DA(?, ?)}");
+		String tenSan = sc.nextLine();
+		stmt = conn.prepareCall("{call LICH_DA(?)}");
 		stmt.setString(1, tenSan);
-		stmt.setString(2, ngayda);
 		rs = stmt.executeQuery();
-		System.out.println("thanh cong");
 		while(rs.next()){
 			System.out.print("ma san: " + rs.getString("maSan") + "\n");
 			System.out.print("thoi gian da: " + rs.getString("tgBDDa") + "\n");

@@ -19,7 +19,7 @@ public class mainSQL {
 			System.out.print("2: dang ki tai khoan\n");
 			System.out.print("3: dang nhap\n");
 			System.out.print("4: lich da cua san san\n");
-			System.out.print("lua cho cua ban: ");
+			System.out.print("lua chon cua ban: ");
 			int choice = sc.nextInt();
 			if(choice == 1){
 				kh.nhapTTK();
@@ -27,15 +27,17 @@ public class mainSQL {
 			}
 			if(choice == 2){
 				tv.nhapTTDK();
+				tv.menu_TV();
 			}
 			if(choice == 3){
-
+				tv.dangNhap();
+				tv.menu_TV();
 			}
 			if(choice == 4){
 				san.dsSan();
 			}
-
 		}
+		// System.out.print(tv.getMaTV("0867923814"));
 	}
 
 }

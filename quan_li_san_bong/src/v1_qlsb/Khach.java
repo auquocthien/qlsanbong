@@ -1,11 +1,16 @@
 package v1_qlsb;
 import java.util.Scanner;
+
+import com.mysql.cj.xdevapi.PreparableStatement;
+
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 
 public class Khach {
 	private String maKhach;
@@ -73,20 +78,51 @@ public class Khach {
 		int s = 0;
 		return nam + "-" + thang + "-" + ngay + " " + h + ":" + m + ":" + s;
 	}
-	public void taoLichDa() throws SQLException {
+	public double thanhTien(int tgDa, String maSan) throws SQLException{
+		double sum = 0;
+		Connection conn = null;
+		CallableStatement stmt = null;
+		conn = DriverManager.getConnection("jdbc:mysql://localhost/qlsanbongV_1?" + "user=root");
+		stmt = conn.prepareCall("{call TINH_TIEN(?, ?, ?)}");
+		stmt.setInt(1, tgDa);
+		stmt.setString(2, maSan);
+		stmt.registerOutParameter(3, Types.DOUBLE);
+		stmt.executeQuery();
+		sum = stmt.getDouble(3);
+		return sum;
+	}
+	public void taoLichDa(String maKhach) throws SQLException {
 			Scanner sc = new Scanner(System.in);
-			maKhach = CreateKey("KH", "Khach");
+			Connection conn = null;
+			CallableStatement stmt = null;
+			String hoten = " ";
+			String sdt = " ";
+			conn = DriverManager.getConnection("jdbc:mysql://localhost/qlsanbongV_1?" + "user=root");
+			if(maKhach.contains("TV")){
+				PreparedStatement stmtTV = conn.prepareStatement("select * from ThanhVien where ThanhVien.maTV = ?");
+				stmtTV.setString(1, maKhach);
+				ResultSet rsTV = stmtTV.executeQuery();
+				while(rsTV.next()){
+					hoten = rsTV.getString("hoten");
+					sdt = rsTV.getString("sdtDK");
+				}
+			}
+			if(maKhach.contains("KH")){
+				PreparedStatement stmtKH = conn.prepareStatement("select * from Khach where Khach.maKhach = ?");
+				stmtKH.setString(1, maKhach);
+				ResultSet rsKH = stmtKH.executeQuery();
+				while(rsKH.next()){
+					hoten = rsKH.getString("hoten");
+					sdt = rsKH.getString("sdt");
+				}
+			}
 			System.out.print("chon san: ");
-			maSan = sc.next();
+			maSan = sc.nextLine();
 			System.out.println("thoi gian bat dau da: ");
 			tgBDDa = nhapNgay();
 			System.out.print("thoi gian da: ");
 			thoigianDa = sc.nextInt();
-			sc.close();
-		try {
-			Connection conn = null;
-			CallableStatement stmt = null;
-			conn = DriverManager.getConnection("jdbc:mysql://localhost/qlsanbongV_1?" + "user=root");
+			
 			stmt = conn.prepareCall("{call TAO_LICH_DAT(?,?,?,?,?,?)}");
 			stmt.setString(1, maKhach);
 			stmt.setString(2, hoten);
@@ -94,13 +130,9 @@ public class Khach {
 			stmt.setString(4, maSan);
 			stmt.setString(5, tgBDDa);
 			stmt.setInt(6, thoigianDa);
+			// stmt.setDouble(7, thanhTien(thoigianDa, maSan));
 			stmt.execute();
-			System.out.print("thanh cong");
-		}
-		catch(SQLException ex){
-			System.out.print("loi: " + ex);
-			
-		}
+			System.out.println("tao lich thanh cong");
 	}
 	public void nhapTTK() throws SQLException{
 		Connection conn = null;
@@ -124,7 +156,7 @@ public class Khach {
 		ResultSet rs = null;
 		Scanner sc = new Scanner(System.in);
 		System.out.print("nhap ho ten: ");
-		hoten = sc.next();
+		hoten = sc.nextLine();
 		System.out.println("nhap nam sinh: ");
 		namSinh = nhapNgayDK();
 	}
@@ -137,14 +169,14 @@ public class Khach {
 	public void menu_KH() throws SQLException{
 		San san = new San();
 		Scanner sc = new Scanner(System.in);
-		int choice = 0;
 		while(true){
 			System.out.println("chao mung " + hoten + " den voi he thong quan li san bong");
 			System.out.println("1: xem lich san");
 			System.out.println("2: xem san");
 			System.out.println("3: tao lich dat san");
+			System.out.println("4: thoat");
 			System.out.print("lua chon cua ban: ");
-			choice = sc.nextInt();
+			int choice = sc.nextInt();
 			switch(choice){
 				case 1:
 					san.lich_da_cua_san();
@@ -153,11 +185,15 @@ public class Khach {
 					san.dsSan();
 					break;
 				case 3:
-					taoLichDa();
+					taoLichDa(this.maKhach);
+					break;
+				case 4:
 					break;
 			}
+			if(choice == 4){
+				break;
+			}
 		}
-
 	}
 }
 

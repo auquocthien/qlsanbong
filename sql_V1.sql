@@ -19,7 +19,8 @@ create table ThanhVien (
 drop table ThanhVien;
 create table HoaDon ( -- lich dat san cua thanh vien
 	STT int primary key auto_increment,
-    maND char(6),
+    maKhach char(6),
+    maTV char(6),
 	hoten varchar(50),
     sdt varchar(10),
     maSan char(6),
@@ -41,8 +42,8 @@ create table QLTaiKhoan (
     );
     
 #tao rang buoc
-alter table HoaDon add foreign key (maND) references Khach(maKhach);
-alter table HoaDon add foreign key (maND) references Thanhvien(maTV);
+alter table HoaDon add foreign key (maKhach) references Khach(maKhach);
+alter table HoaDon add foreign key (maTV) references Thanhvien(maTV);
 alter table HoaDon add foreign key (maSan) references San(maSan);
 alter table ThanhVien add foreign key (sdtDK) references QLTaiKhoan(sdtDK);
 alter table ThanhVien alter column loaiTV set default false;
@@ -71,33 +72,45 @@ begin
 end/
 drop procedure THEM_TV/
 #tinh tien san
-create procedure TINH_TIEN(in thoigianDA int, in maSan char(6), out thanhtien float)
+create procedure TINH_TIEN(in thoigianDa int, in maSan char(6), out thanhtien double)
 begin
 	set thanhtien = thoigianDa * (select tienSan from San where San.maSan = maSan);
 end/
-
+drop procedure TINH_TIEN/
 #them lich da
-create procedure TAO_LICH_DAT(in maND char(6), in hoten varchar(50), in sdt varchar(10), in maSan char(6), in tgBDDa datetime, in thoigianDa int, in thanhtien float)
+create procedure TAO_LICH_DAT(in maND char(6), in hoten varchar(50), in sdt varchar(10), in tenSan char(6), in tgBDDa datetime, in thoigianDa int)
 begin
-	set @tt = 0;
-    call TINH_TIEN(thoigianDa, maSan, @tt);
-	insert into HoaDon(maND, hoten, maSan, tgBDDa, thoigianDa, thanhtien)
-		values(maND, hoten, sdt, maSan, tgBDDa, thoigianDam, @tt);
+	set @maSan = (select maSan from San where San.tenSan = tenSan);
+    call TINH_TIEN(thoigianDa, @maSan, @tt);
+    if maND like 'TV%' then
+		insert into HoaDon(maTV, hoten, sdt, maSan, tgBDDa, thoigianDa, thanhtien)
+			values(maND, hoten, sdt, @maSan, tgBDDa, thoigianDa, @tt);
+	else
+		insert into HoaDon(maKhach, hoten, sdt, maSan, tgBDDa, thoigianDa, thanhtien)
+			values(maND, hoten, sdt, @maSan, tgBDDa, thoigianDa, @tt);
+	end if;
 end/
+drop procedure TAO_LICH_DAT/
 
 #lich da cua san
-create procedure LICH_DA(in tenSan char(6), in ngayda datetime)
+create procedure LICH_DA(in tenSan char(6))
 begin
 	select maSan, tgBDDa, thoigianDa
 		from HoaDon
-        where ngayDa = thoigianDa
-			and maSan = (select maSan from San where tenSan = San.tenSan);
+        where maSan = (select maSan from San where tenSan = San.tenSan);
 end/
+drop procedure LICH_DA/
 
 #them tai khoan
 create procedure THEM_TK(in sdtDK varchar(10), in mk varchar(10))
 begin
 	insert into QLTaiKhoan values(sdtDK, mk);
+end/
+
+#lay ma thanh vien
+create procedure LAY_MATV(in sdtDK char(10), out maTV char(6))
+begin
+	set maTV = (select maTV from ThanhVien where ThanhVien.sdtDK = sdtDK);
 end/
 
 #kiem tra so dien thoai
@@ -107,11 +120,26 @@ begin
     select count(*) as slsdt from QLTaiKhoan where QLTaiKhoan.sdtDK = sdt;
 end/
 drop procedure KTR_sdt/
+
+#kiem tra dang nhap hop le
+create procedure KTR_DN(in sdtDK char(10), in mk char(10))
+begin
+	select count(*) as hopLe from QLTaiKhoan where QLTaiKhoan.sdtDK = sdtDK and QLTaiKhoan.mk = mk;
+end/
+drop procedure KTR_DN/
+call KTR_DN('0931096574', 'au1234de')/
 #truy van bang
 select * from QLTaiKhoan/
 select * from Thanhvien/
 select * from Khach/
+select * from HoaDon/	
 delete from ThanhVien where maTV = "TV2"/
 delete from QLTaiKhoan where sdtDK like "0867%"/
 call THEM_TV("TV2", "thien", "0867923814", "2001-01-21", "au1234de")/ 
 call KTR_sdt("0867923813")/
+call LICH_DA('San 1')/
+call TAO_LICH_DAT('TV1', 'thienchanrau', '0355806617', 'San 1', '2022-01-21', 90)/
+SET @SUM = 0/
+CALL TINH_TIEN(90, 'San1', @SUM)/
+SELECT @SUM/
+select maSan from San where San.tenSan = 'San 2'/
