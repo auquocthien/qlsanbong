@@ -91,6 +91,30 @@ public class Khach {
 		sum = stmt.getDouble(3);
 		return sum;
 	}
+	public int ktr_dung_lich(String maSan, String tgBDDa, int tgDa) throws SQLException{
+		int check = 0;
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/qlsanbongV_1?" + "user=root");
+		CallableStatement stmt1 = conn.prepareCall("{call LICH_DA(?)}");
+		stmt1.setString(1, maSan);
+		ResultSet rs1 = stmt1.executeQuery();
+		while(rs1.next()){
+			CallableStatement stmt = conn.prepareCall("{call KTR_DUNG_LICH(?,?,?,?,?,?)}");
+			stmt.setString(1, maSan);
+			stmt.setString(2, tgBDDa);
+			stmt.setInt(3, tgDa);
+			stmt.setString(4, rs1.getString("tgBDDa"));
+			stmt.setString(5, rs1.getString("thoigianDa"));
+			stmt.registerOutParameter(6, Types.INTEGER);
+			stmt.executeQuery();
+			check = stmt.getInt(6);
+			System.out.println(check);
+			if(check == 1){
+				break;
+			}
+		}
+		return check;
+		
+	}
 	public void taoLichDa(String maKhach) throws SQLException {
 			Scanner sc = new Scanner(System.in);
 			Connection conn = null;
@@ -116,12 +140,19 @@ public class Khach {
 					sdt = rsKH.getString("sdt");
 				}
 			}
-			System.out.print("chon san: ");
-			maSan = sc.nextLine();
-			System.out.println("thoi gian bat dau da: ");
-			tgBDDa = nhapNgay();
-			System.out.print("thoi gian da: ");
-			thoigianDa = sc.nextInt();
+			do{
+				System.out.print("chon san: ");
+				maSan = sc.nextLine();
+				System.out.println("thoi gian bat dau da: ");
+				tgBDDa = nhapNgay();
+				System.out.println("thoi gian da ");
+				System.out.println("90 phut");
+				System.out.println("60 phut");
+				System.out.print("lua chon cua ban: ");
+				thoigianDa = sc.nextInt();
+				sc.nextLine();
+			}
+			while(ktr_dung_lich(maSan, tgBDDa, thoigianDa) == 1);
 			
 			stmt = conn.prepareCall("{call TAO_LICH_DAT(?,?,?,?,?,?)}");
 			stmt.setString(1, maKhach);
